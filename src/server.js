@@ -3,13 +3,16 @@ const Hapi = require('hapi');
 const server = new Hapi.Server();
 server.connection({ port: process.env.PORT || 5000});
 
-
-const routeHandler = require('./routes/play.js');
-
 server.route({
     method: 'POST',
     path: '/play',
-    handler: routeHandler
+    handler: require('./routes/play.js')
+});
+
+server.route({
+    method: 'POST',
+    path: '/check',
+    handler: require('./routes/check.js')
 });
 
 server.route({

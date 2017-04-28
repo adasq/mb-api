@@ -11,11 +11,14 @@ module.exports = function (request, reply) {
         var trooperConfig = {
           domain: "com",
           opponent: "nopls",
-          name: request.payload.name
+          name: request.payload.name,
+          pass: request.payload.pass || undefined
         };
 
+        console.log(trooperConfig);
+
         const trooper = new Trooper(trooperConfig);  
-         trooper.auth().then(function(result){
+         trooper.auth2().then(function(result){
            if(result.code === 201){
             var fightPromises = [trooper.makeBattles(), 
                 trooper.makeMissions(),
@@ -31,7 +34,6 @@ module.exports = function (request, reply) {
                             skill.style = skill.style.replace("url('/img/", "url('/assets/");
                         });
                      if(result === 501){
-                        console.log('upgrade availavle');
                          var promise = trooper.getTrooperUpgradeSkillList(0);
                          promise.then( upgradeSkillList => {                            
                              reply({
@@ -40,18 +42,32 @@ module.exports = function (request, reply) {
                                  upgrade: upgradeSkillList
                                 });
                         });
-                     }else{
-                        console.log('upgrade NOT availavle');
+                     }else {
                         reply({
                             fight: fightResponse,
-                            skills: skillList
+                            skills: skillList,
+                            upgrade: null
                         });
                      }
                     });
                   });
+                }, () => {
+                    connectionError(reply)
                 });
-           }else{
-                console.log('err', result, result.message);
+           }else {
+               reply({
+                   err: result.code,
+                   msg: result.message
+               });
            }
+        }, (err) => {
+            reply(err);
         });
 };
+
+function connectionError(reply) {
+               reply({
+                   err: -1,
+                   msg: 'connection error'
+               });
+}

@@ -16,7 +16,7 @@ var Trooper = function(config, ao){
 	this.config = _.extend({}, config);	
 };
 Trooper.prototype.authSync = function(ao){
-		this.chk = ao.chk;  
+		this.chk = ao.chk;
 		var newCookie = request.cookie(ao.cookie);
 		newCookie.domain = 'minitroopers.com'	
 		newCookie.path = '/';
@@ -78,10 +78,13 @@ var code = null;
 if(response.isRedirect()){
   	code= CookieManager.getTextByCookie(cookie);
   	if(that.config.pass){
-  		that.chk = CookieManager.getCHKByCookie(cookie); 
- 		code= code || 201;
+		if(response.getHeaders().location.indexOf(that.config.name) != -1) {
+			that.chk = CookieManager.getCHKByCookie(cookie); 
+			code= code || 201;
+		}else {
+			code= 501;
+		}
   	}else{
-
   		code= code || 501;
   	} 
 }else{	
@@ -90,7 +93,9 @@ if(response.isRedirect()){
 }
 var jar = that.req.jar;
 var cookieString= jar.getCookieString('http://minitroopers.com');
-if(code === 201){	
+
+
+if(code === 201){
 	if(response.body.indexOf('name="pass"') > -1){
 			code = 46;
 		   defer.reject({code: code, message: CookieMessages.auth[code]});
@@ -100,9 +105,6 @@ if(code === 201){
 }else{
  defer.reject({code: code, message: CookieMessages.auth[code]});
 }
-// console.log(response.isRedirect())
-// console.log(response.getHeaders())
-// console.log(response.getCookies().split(':'), response.getCookies().split(':').length)
 }, function(requestErrorCode){
 	defer.reject({code: requestErrorCode, message: CookieMessages.auth[requestErrorCode]});
 });

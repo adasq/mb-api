@@ -38,8 +38,7 @@ module.exports = function(){
 			// x.value = x.value.replace(/lastCheckd[0-9]+y13/, 'lastCheckd'+d+'y13');
 			// console.log(x.value)
 			request.post({form: data, uri: url, jar: j, followRedirect: false}, function(e,r,b){
-if(e){
-
+				if(e){
 					defer.reject(-111);
 				}else{
 				var response = new Response(r);
