@@ -11,7 +11,6 @@ module.exports = function(){
 	this.send = function(url){
 			var defer= q.defer(); 			
 			request({uri: url, jar: j, followRedirect: false}, function(e,r,b){
-				
 				if(e){										
 					defer.reject(-111);
 				}else{

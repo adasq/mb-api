@@ -30,6 +30,7 @@ module.exports =  {
 		},
 		auth: {
 			"-111": "Page could not be loaded",
+			"66": "Name is invalid",
 			"46": "You need to authorize",
 			"21": "Wrong Password",
 			"501": "Trooper does not exists",

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node main.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./spec/"
   },
   "author": "",
   "license": "ISC",
@@ -13,10 +13,16 @@
     "node": "6.9.1"
   },
   "dependencies": {
+    "chai": "3.5.0",
     "cheerio": "0.22.0",
+    "expect.js": "0.3.1",
     "hapi": "16.1.1",
+    "jasmine-node": "^1.14.5",
+    "mocha": "3.3.0",
+    "nconf": "0.8.4",
     "q": "1.5.0",
     "request": "2.81.0",
+    "should": "11.2.1",
     "underscore": "1.8.3"
   }
 }

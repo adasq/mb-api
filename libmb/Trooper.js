@@ -4,6 +4,7 @@ var Request = require('./Request');
 var request = require('request');
 var CookieMessages= require('./CookieMessages'); 
 var CookieManager = require('./CookieManager'); 
+var NameValidator = require('./NameValidator'); 
 var _ = require('underscore');
 var q = require('q');
 
@@ -62,8 +63,9 @@ return defer.promise;
 
 Trooper.prototype.auth2= function(){
 var that = this;
-var defer= q.defer(); 
-if(this.config.pass){
+
+return new Promise((resolve, reject) => {
+	if(this.config.pass){
 	var data = {
 		login: this.config.name,
 		pass: this.config.pass
@@ -74,7 +76,7 @@ if(this.config.pass){
 }
 promise.then(function(response){
 var cookie = response.getCookies();
-var code = null; 
+var code = null;
 if(response.isRedirect()){
   	code= CookieManager.getTextByCookie(cookie);
   	if(that.config.pass){
@@ -91,24 +93,33 @@ if(response.isRedirect()){
  	that.chk = CookieManager.getCHKByCookie(cookie);  	
  	code= 201; 	
 }
-var jar = that.req.jar;
-var cookieString= jar.getCookieString('http://minitroopers.com');
 
 
 if(code === 201){
 	if(response.body.indexOf('name="pass"') > -1){
 			code = 46;
-		   defer.reject({code: code, message: CookieMessages.auth[code]});
+		   resolve({code: code, message: CookieMessages.auth[code]});
 	}else{
-		 defer.resolve({code: code, message: CookieMessages.auth[code]});
+		 resolve({code: code, message: CookieMessages.auth[code]});
 	}
 }else{
- defer.reject({code: code, message: CookieMessages.auth[code]});
+ resolve({code: code, message: CookieMessages.auth[code]});
 }
-}, function(requestErrorCode){
-	defer.reject({code: requestErrorCode, message: CookieMessages.auth[requestErrorCode]});
+}, (requestErrorCode) => {
+
+	const isValidName = NameValidator.isValid(this.config.name);
+	if(isValidName) {
+		resolve({code: requestErrorCode, message: CookieMessages.auth[requestErrorCode]});
+	} else {
+		resolve({code: 66, 
+			payload: NameValidator.host(this.config.name),
+			message: CookieMessages.auth[66]});
+	}
+	
+	
 });
-return defer.promise;
+})
+
 };
 
 var fs = require('fs');
