@@ -14,5 +14,5 @@ module.exports = function (request, reply) {
         };
         console.log(trooperConfig);
         const trooper = new Trooper(trooperConfig);  
-        trooper.auth2().then(reply, reply);
+        trooper.auth().then(reply, reply);
 };

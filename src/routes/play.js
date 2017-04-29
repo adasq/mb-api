@@ -18,7 +18,7 @@ module.exports = function (request, reply) {
         console.log(trooperConfig);
 
         const trooper = new Trooper(trooperConfig);  
-         trooper.auth2().then(function(result){
+         trooper.auth().then(function(result){
            if(result.code === 201){
             var fightPromises = [trooper.makeBattles(), 
                 trooper.makeMissions(),
@@ -55,13 +55,8 @@ module.exports = function (request, reply) {
                     connectionError(reply)
                 });
            }else {
-               reply({
-                   err: result.code,
-                   msg: result.message
-               });
+               reply(result);
            }
-        }, (err) => {
-            reply(err);
         });
 };
 

@@ -18,24 +18,18 @@ server.route({
 server.route({
     method: 'GET',
     path: '/test',
-    handler: (req, res) => {
-        res({
-            aa: 2
-        })
-    }
+    handler: (req, res) => res('ok!')
 });
 
 function start(cb) {
-
-server.start((err) => {
-    if (err) {
-        return cb(err);
-    }
-    cb(null);
-});
+    server.start((err) => {
+        if (err) {
+            return cb(err);
+        }
+        return cb(null);
+    });
 }
-
 
 module.exports = {
     start
-}
+};

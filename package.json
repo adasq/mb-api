@@ -1,5 +1,5 @@
 {
-  "name": "api",
+  "name": "minibotters-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,14 +15,11 @@
   "dependencies": {
     "chai": "3.5.0",
     "cheerio": "0.22.0",
-    "expect.js": "0.3.1",
     "hapi": "16.1.1",
-    "jasmine-node": "^1.14.5",
     "mocha": "3.3.0",
     "nconf": "0.8.4",
     "q": "1.5.0",
     "request": "2.81.0",
-    "should": "11.2.1",
     "underscore": "1.8.3"
   }
 }

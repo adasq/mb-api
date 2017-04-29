@@ -25,114 +25,67 @@ Trooper.prototype.authSync = function(ao){
 		this.req.jar.setCookie(newCookie, 'http://minitroopers.com');
 };
 
-Trooper.prototype.auth= function(){
-var that = this;
-var defer= q.defer();
-if(this.config.pass){
-	var data = {
-		login: this.config.name,
-		pass: this.config.pass
-	};
-	promise= this.req.post(this.urlManager.getLoginUrl(), data);
-}else{	 
-	promise= this.req.send(this.urlManager.getBaseUrl());
-}
-promise.then(function(response){
-var cookie = response.getCookies();
-var code = null; 
-if(response.isRedirect()){
-  	code= CookieManager.getTextByCookie(cookie);
-  	if(that.config.pass){
-  		that.chk = CookieManager.getCHKByCookie(cookie); 
- 		code= code || 201;
-  	}else{
-  		code= code || 501;
-  	} 
-}else{
- 	that.chk = CookieManager.getCHKByCookie(cookie);  	
- 	code= 201;
-}
-var jar = that.req.jar;
-var cookieString= jar.getCookieString('http://minitroopers.com');
-
- defer.resolve({ao: {cookie: cookieString, 
- 	chk: that.chk}, code: code, message: CookieMessages.auth[code]});
-}, defer.reject);
-return defer.promise;
+const AUTH = {
+	SUCCESS: 201,
+	NOT_EXISTS: 501,
+	WRONG_PASSWORD: 21,
+	NO_PASSWORD_SET: 46,
+	INVALID_NAME: 66,
+	REQUEST_ERROR: -111
 };
 
-Trooper.prototype.auth2= function(){
-var that = this;
-
-return new Promise((resolve, reject) => {
-	if(this.config.pass){
-	var data = {
-		login: this.config.name,
-		pass: this.config.pass
-	};
-	promise= this.req.post(this.urlManager.getLoginUrl(), data);
-}else{	 
-	promise= this.req.send(this.urlManager.getBaseUrl());
-}
-promise.then(function(response){
-var cookie = response.getCookies();
-var code = null;
-if(response.isRedirect()){
-  	code= CookieManager.getTextByCookie(cookie);
-  	if(that.config.pass){
-		if(response.getHeaders().location.indexOf(that.config.name) != -1) {
-			that.chk = CookieManager.getCHKByCookie(cookie); 
-			code= code || 201;
-		}else {
-			code= 501;
+Trooper.prototype.auth = function() {
+	let promise;
+	return new Promise((resolve, reject) => {
+		const {pass, name} = this.config;
+		if(pass){
+			promise = this.req.post(this.urlManager.getLoginUrl(), {
+				login: name, pass
+			});
+		} else {	 
+			promise = this.req.send(this.urlManager.getBaseUrl());
 		}
-  	}else{
-  		code= code || 501;
-  	} 
-}else{	
- 	that.chk = CookieManager.getCHKByCookie(cookie);  	
- 	code= 201; 	
-}
+		promise.then(response => {
+			let cookie = response.getCookies();
+			let code = null;
+			if(response.isRedirect()){
+				code= CookieManager.getTextByCookie(cookie);
+				if(pass){
+					if(response.getHeaders().location.indexOf(name) != -1) {
+						this.chk = CookieManager.getCHKByCookie(cookie); 
+						code= code || AUTH.SUCCESS;
+					}else {
+						code= AUTH.NOT_EXISTS;
+					}
+				}else{
+					code= code || AUTH.NOT_EXISTS;
+				} 
+			}else{
+				this.chk = CookieManager.getCHKByCookie(cookie);  	
+				code = AUTH.SUCCESS;
+			}
+			if(code === AUTH.SUCCESS && containsPasswordField(response.body)) {
+				code = AUTH.NO_PASSWORD_SET;
+			}
+			resolve({code: code, message: CookieMessages.auth[code]});
+		}, (requestErrorCode) => {
+			const isValidName = NameValidator.isValid(name);
+			if(isValidName) {
+				resolve({code: requestErrorCode, message: CookieMessages.auth[requestErrorCode]});
+			} else {
+				code = AUTH.INVALID_NAME;
+				resolve({
+					code, 
+					payload: NameValidator.host(name),
+					message: CookieMessages.auth[code]
+				});
+			}
+		});
+	});//promise
 
-
-if(code === 201){
-	if(response.body.indexOf('name="pass"') > -1){
-			code = 46;
-		   resolve({code: code, message: CookieMessages.auth[code]});
-	}else{
-		 resolve({code: code, message: CookieMessages.auth[code]});
+	function containsPasswordField(body){
+		return body.indexOf('name="pass"') > -1;
 	}
-}else{
- resolve({code: code, message: CookieMessages.auth[code]});
-}
-}, (requestErrorCode) => {
-
-	const isValidName = NameValidator.isValid(this.config.name);
-	if(isValidName) {
-		resolve({code: requestErrorCode, message: CookieMessages.auth[requestErrorCode]});
-	} else {
-		resolve({code: 66, 
-			payload: NameValidator.host(this.config.name),
-			message: CookieMessages.auth[66]});
-	}
-	
-	
-});
-})
-
-};
-
-var fs = require('fs');
-
-
-var writeToFile = function(b){
-fs.writeFile("./examle.txt", b, function(err) {
-    if(err) {
-        console.log(err);
-    } else {
-        console.log("The file was saved!");
-    }
-}); 
 };
 
 //==========================================================
@@ -152,7 +105,6 @@ promiseList.push(promise);
 q.all(promiseList).then(function(pages){
 	_.each(pages, function(trooperArmyMemberPage){
 		 var detalis = parser.getTrooperDetalis(trooperArmyMemberPage);			 
-			//	detalis.name = Trooper.normalizeName(detalis.name);
 		 armyMembersList.push(detalis);		 
 	});
 	defer.resolve(armyMembersList);
@@ -372,9 +324,6 @@ generateArmyFamily(this.config, army).then(function(){
 return armyResultPromise.promise;
 }
 
-
-
-
 Trooper.prototype.selectSkill = function(trooperId, skill){
 	var trooper = (trooperId || 0), that= this, defer= q.defer(); 
 	var promise = this.req.send(this.urlManager.getSelectUpgradeSkillUrl(this.chk, trooper, skill));
@@ -425,7 +374,7 @@ Trooper.prototype.toString= function(){
 };
 
 
-var preventAuthChecking = ['auth','auth2','authSync', 'toString', 'generateTrooperFamily'],
+var preventAuthChecking = ['auth','authSync', 'toString', 'generateTrooperFamily'],
 checkAuth = function(){	 
 	return !!this.chk;
 };
@@ -444,99 +393,5 @@ _.each(Trooper.prototype, function(val, name){
 		};
 	}	
 });
-
-
-
-Trooper.normalizeName = (function(name){
-
-var StringBuf= function() {
-	this.b = "";
-};
-
-var removeAccentsUTF8 = function(s) {
-	var b = new StringBuf();
-	var _g1 = 0, _g = s.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		var c = s.charCodeAt(i);
-		switch(c) {
-		case 233:case 232:case 234:case 235:
-			b.b += "e";
-			break;
-		case 201:case 200:case 202:case 203:
-			b.b += "E";
-			break;
-		case 224:case 226:case 228:case 225:
-			b.b += "a";
-			break;
-		case 192:case 194:case 196:case 193:
-			b.b += "A";
-			break;
-		case 249:case 251:case 252:case 250:
-			b.b += "u";
-			break;
-		case 217:case 219:case 220:case 218:
-			b.b += "U";
-			break;
-		case 238:case 239:case 237:
-			b.b += "i";
-			break;
-		case 206:case 207:case 205:
-			b.b += "I";
-			break;
-		case 244:case 243:case 246:case 245:
-			b.b += "o";
-			break;
-		case 212:case 211:case 214:
-			b.b += "O";
-			break;
-		case 230:case 198:
-			b.b += "a";
-			b.b += "e";
-			break;
-		case 339:case 338:
-			b.b += "o";
-			b.b += "e";
-			break;
-		case 231:
-			b.b += "c";
-			break;
-		case 199:
-			b.b += "C";
-			break;
-		case 241:
-			b.b += "n";
-			break;
-		case 209:
-			b.b += "N";
-			break;
-		default:
-			b.b += String.fromCharCode(c);
-		}
-	}
-	return b.b;
-};
-
- return function(name) {
- 	var host = removeAccentsUTF8(name).toLowerCase(); 
- 	host = host.trim();
- host = host.replace(/\s+/g, "-");
- 
- 			host = host.replace(/[^a-z0-9.-]+/g, "");
- 	if(host.length > 16) {
-		var parts = host.split("-");
-       if(parts[0].length >= 8)
-      {host = parts[0];}else{
- 				host = host.substring(0, 16);
- 		}
- 	}
- 	return host;
- };
-
-})();
-
-
-
-
 
 module.exports =  Trooper;

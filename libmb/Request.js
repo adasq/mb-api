@@ -30,12 +30,6 @@ module.exports = function(){
 	};
 	this.post = function(url, data){
 			var defer= q.defer();
-			// var x = j._jar.store.idx['minitroopers.com']['/'].ssid;		
-			// var d = +new Date();
-			// d = d - d%1000;
-			// console.log(x.value)
-			// x.value = x.value.replace(/lastCheckd[0-9]+y13/, 'lastCheckd'+d+'y13');
-			// console.log(x.value)
 			request.post({form: data, uri: url, jar: j, followRedirect: false}, function(e,r,b){
 				if(e){
 					defer.reject(-111);
