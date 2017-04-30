@@ -16,7 +16,6 @@ const hapiPlugins = [{
     options: {}
 }];
 
-
 function start(cb) {
     server.register(hapiPlugins, () => {
         server.route({
