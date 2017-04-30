@@ -11,6 +11,8 @@ const PROD_STATICS = path.join(__dirname, '../', 'node_modules/muib');
 
 let STATICS_DIR = isProd ? PROD_STATICS : DEV_STATICS;
 
+console.log('STATICS_DIR: ', STATICS_DIR);
+
 const hapiPlugins = [{
     register: require('inert'),
     options: {}
