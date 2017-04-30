@@ -7,7 +7,7 @@ server.connection({ port: process.env.PORT || 5000});
 const isProd = nconf.get('PRODUCTION');
 
 const DEV_STATICS = path.join(__dirname, '../', 'static');
-const PROD_STATICS = path.join(__dirname, '../', 'node_modules/mbui');
+const PROD_STATICS = path.join(__dirname, '../', 'node_modules/muib');
 
 let STATICS_DIR = isProd ? PROD_STATICS : DEV_STATICS;
 
