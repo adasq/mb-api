@@ -22,13 +22,13 @@ function start(cb) {
     server.register(hapiPlugins, () => {
         server.route({
             method: 'POST',
-            path: '/play',
+            path: '/api/play',
             handler: require('./routes/play.js')
         });
 
         server.route({
             method: 'POST',
-            path: '/check',
+            path: '/api/check',
             handler: require('./routes/check.js')
         });
 
