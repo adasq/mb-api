@@ -2,6 +2,9 @@ const Hapi = require('hapi');
 const path = require('path');
 const nconf = require('nconf');
 const server = new Hapi.Server();
+const pkginfo = require('pkginfo');
+const muib = pkginfo.read({}, 'muib').package;
+
 server.connection({ port: process.env.PORT || 5000});
 
 const isProd = nconf.get('PRODUCTION');
@@ -10,6 +13,10 @@ const DEV_STATICS = path.join(__dirname, '../', 'static');
 const PROD_STATICS = path.join(__dirname, '../', 'node_modules/muib');
 
 let STATICS_DIR = isProd ? PROD_STATICS : DEV_STATICS;
+
+
+
+
 
 console.log('STATICS_DIR: ', STATICS_DIR);
 
@@ -24,6 +31,16 @@ function start(cb) {
             method: 'POST',
             path: '/api/play',
             handler: require('./routes/play.js')
+        });
+
+        server.route({
+            method: 'GET',
+            path: '/api/version',
+            handler: function (request, reply) {
+                reply({
+                    ui: muib.version
+                });             
+            }
         });
 
         server.route({
