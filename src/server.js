@@ -34,6 +34,12 @@ function start(cb) {
         });
 
         server.route({
+            method: 'POST',
+            path: '/api/select-skill',
+            handler: require('./routes/select-skill.js')
+        });        
+
+        server.route({
             method: 'GET',
             path: '/api/version',
             handler: function (request, reply) {

@@ -324,38 +324,35 @@ generateArmyFamily(this.config, army).then(function(){
 return armyResultPromise.promise;
 }
 
-Trooper.prototype.selectSkill = function(trooperId, skill){
+Trooper.prototype.selectSkill = function(trooperId, skill) {
 	var trooper = (trooperId || 0), that= this, defer= q.defer(); 
 	var promise = this.req.send(this.urlManager.getSelectUpgradeSkillUrl(this.chk, trooper, skill));
-	promise.then(function(response){ 
+	promise.then(function(response) {
 		var headers= response.getHeaders();	
 		var location = headers['location'];	
 		var cookies= response.getCookies();
-		if(cookies){	
+		let code = 510;
+		if(cookies) {
 			if(headers['location'] === '/hq'){
-				defer.resolve('*');
-			}else{
-				console.log("unexcepted1");
-			}	
-		 }else{		 	
+				code = 201;
+			}
+		 } else {
 		 		if(!location){
-		 			 defer.resolve(501);
+		 			 code = 501;
 		 		}else{
 		 			switch(location){
 		 				case ('/t/'+trooper): 
-		 					defer.resolve(502);
-		 				break;
-		 				case '/hq':
-		 					defer.resolve(503);
-		 				break;
-		 				default: 
-		 					console.log('unexcepted2');
+						 	code = 502;
 		 				break;
 		 			}
 		 		}
-		 		defer.resolve(-1);
-				
 		}
+		defer.resolve({
+			code,
+			message: CookieMessages.skillSelection[code]
+		});
+	}, (err) => {
+		defer.resolve(err);
 	});
 	return defer.promise;
 };

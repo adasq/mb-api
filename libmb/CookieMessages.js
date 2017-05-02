@@ -22,11 +22,10 @@ module.exports =  {
 			"504": "trooper does not exists"
 		},
 		skillSelection: {
-			"*": "Congratulations, you have successfully selected skill",
-			"-1": "Skill not selected",
-			"501": "you can not select this skill",
-			"502": "This trooper could not be upgraded",
-			"503": "Check if trooper really exists"
+			"201": "Congratulations, you have successfully selected skill",
+			"510": "Unexpected issue",
+			"501": "Not allowed to select this skill",
+			"502": "No skill selection available"
 		},
 		auth: {
 			"-111": "Page could not be loaded",
