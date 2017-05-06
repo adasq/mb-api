@@ -1,1 +1,1 @@
-# minibotters-api
+# mb-api
