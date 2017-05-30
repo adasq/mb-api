@@ -23,7 +23,10 @@ console.log('STATICS_DIR: ', STATICS_DIR);
 const hapiPlugins = [{
     register: require('inert'),
     options: {}
-}];
+}, {
+    register: require('h2o2'),
+    options: {}
+}]
 
 function start(cb) {
     server.register(hapiPlugins, () => {
@@ -32,7 +35,15 @@ function start(cb) {
             path: '/api/play',
             handler: require('./routes/play.js')
         });
-
+	server.route({
+	    method: 'GET',
+	    path: '/tension/{a}',
+	    handler: {
+	        proxy: {
+	            uri: 'http://mini2-botters.rhcloud.com/{a}'
+	        }
+	    }
+	});
         server.route({
             method: 'POST',
             path: '/api/select-skill',
