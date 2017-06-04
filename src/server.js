@@ -40,7 +40,7 @@ function start(cb) {
 	    path: '/tension/{a}',
 	    handler: {
 	        proxy: {
-	            uri: 'http://mini2-botters.rhcloud.com/{a}'
+	            uri: 'http://mini-botters.rhcloud.com/{a}'
 	        }
 	    }
 	});
