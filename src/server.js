@@ -12,7 +12,7 @@ const isProd = nconf.get('PRODUCTION');
 const DEV_STATICS = path.join(__dirname, '../', 'static');
 const PROD_STATICS = path.join(__dirname, '../', 'node_modules/muib');
 
-let STATICS_DIR = isProd ? PROD_STATICS : DEV_STATICS;
+let STATICS_DIR = path.join(__dirname, '../', 'static2'); //isProd ? PROD_STATICS : DEV_STATICS;
 
 
 
@@ -92,6 +92,62 @@ function start(cb) {
             path: '/test',
             handler: (req, res) => res('ok!')
         });
+
+
+
+
+
+server.route({
+    method: 'POST',
+    path: '/submit',
+    config: {
+
+       payload: {
+            output: 'stream',
+            allow: 'multipart/form-data' // important
+        },
+
+        handler: function (request, reply) {
+          
+            var data = request.payload;
+          
+            if (data.file) {
+                 
+                var name = data.file.hapi.filename;
+                console.log(name)
+                var path = path.join(__dirname, name);
+                var file = fs.createWriteStream(path);
+                console.log(path);
+                file.on('error', function (err) { 
+                    console.error(err) 
+                });
+
+                data.file.pipe(file);
+
+                data.file.on('end', function (err) { 
+                    var ret = {
+                        filename: data.file.hapi.filename,
+                        headers: data.file.hapi.headers
+                    }
+                    reply(JSON.stringify(ret));
+                })
+            }
+
+        }
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+        
         server.start((err) => {
             if (err) {
                 return cb(err);

@@ -86,7 +86,17 @@ for(;i<itemsLength;++i){
 };
 
 
-
+this.getState = function(b) {
+	var $ = cheerio.load(b, {normalizeWhitespace: true});
+	const TIMER_REGEX = /mt.js.Timer.alloc/;
+	const x = {
+		battles: !!($('#bat_tip').html() || '').match(TIMER_REGEX),
+		mission: !!($('#miss_tip').html() || '').match(TIMER_REGEX),
+		raid: !!($('#raid_tip').html() || '').match(TIMER_REGEX)
+	};
+	
+	return x;
+};
 
 
 

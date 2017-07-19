@@ -36,6 +36,9 @@ const AUTH = {
 
 Trooper.prototype.auth = function() {
 	let promise;
+	var that = this;
+                
+
 	return new Promise((resolve, reject) => {
 		const {pass, name} = this.config;
 		if(pass){
@@ -46,6 +49,11 @@ Trooper.prototype.auth = function() {
 			promise = this.req.send(this.urlManager.getBaseUrl());
 		}
 		promise.then(response => {
+					
+			function setState() {
+				that.state = (new PageParser()).getState(response.body);
+			}
+			
 			let cookie = response.getCookies();
 			let code = null;
 			if(response.isRedirect()){
@@ -60,13 +68,14 @@ Trooper.prototype.auth = function() {
 				}else{
 					code= code || AUTH.NOT_EXISTS;
 				} 
-			}else{
-				this.chk = CookieManager.getCHKByCookie(cookie);  	
+			} else {
+				this.chk = CookieManager.getCHKByCookie(cookie);
 				code = AUTH.SUCCESS;
 			}
 			if(code === AUTH.SUCCESS && containsPasswordField(response.body)) {
 				code = AUTH.NO_PASSWORD_SET;
 			}
+			if (code === AUTH.SUCCESS) { setState(); }		
 			resolve({code: code, message: CookieMessages.auth[code]});
 		}, (requestErrorCode) => {
 			const isValidName = NameValidator.isValid(name);
