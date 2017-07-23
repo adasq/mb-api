@@ -13,7 +13,7 @@ module.exports = function (data, cb) {
        
         const trooper = new Trooper(trooperConfig);  
          trooper.auth().then(function(result) {
-             
+            console.log(trooper.state);
            if(result.code === 201){
                 var fightPromises = [
                     !trooper.state.battles && trooper.makeBattles(), 

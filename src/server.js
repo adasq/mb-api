@@ -15,7 +15,13 @@ const PROD_STATICS = path.join(__dirname, '../', 'node_modules/muib');
 let STATICS_DIR = path.join(__dirname, '../', 'static2'); //isProd ? PROD_STATICS : DEV_STATICS;
 
 
+const admin = require("firebase-admin");
 
+// admin.database().ref('/lists').orderByChild('state').limitToLast(2).endAt().on('child_added', (snapshot) => {
+//     console.log('snapshot');
+//     const data = snapshot.val();
+//     console.log(snapshot.key, data);
+// });
 
 
 console.log('STATICS_DIR: ', STATICS_DIR);
@@ -30,6 +36,22 @@ const hapiPlugins = [{
 
 function start(cb) {
     server.register(hapiPlugins, () => {
+
+        server.route({
+            method: 'POST',
+            path: '/api/upload',
+            handler: (request, reply) => {
+                var newPostRef = admin.database().ref('/lists').push();
+                newPostRef.set({
+                    list: request.payload
+                }).then(() => {
+                    reply({err: false, id: newPostRef.key});
+                }, () => {
+                    reply({err: true});
+                });
+            }
+        });
+
         server.route({
             method: 'POST',
             path: '/api/play',
