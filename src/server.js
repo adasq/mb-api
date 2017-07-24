@@ -5,7 +5,10 @@ const server = new Hapi.Server();
 const pkginfo = require('pkginfo');
 const muib = pkginfo.read({}, 'muib').package;
 
-server.connection({ port: process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 5000});
+server.connection({ 
+    host: process.env.OPENSHIFT_NODEJS_IP || undefined,
+    port: process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 5000
+});
 
 const isProd = nconf.get('PRODUCTION');
 
