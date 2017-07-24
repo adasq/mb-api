@@ -16,11 +16,10 @@ module.exports = function (data, cb) {
             console.log(trooper.state);
            if(result.code === 201){
                 var fightPromises = [
-                    !trooper.state.battles && trooper.makeBattles(), 
-                    !trooper.state.mission && trooper.makeMissions(),
-                    !trooper.state.raid && trooper.makeRaids()
+                    trooper.state.battlesAvailable && trooper.makeBattles(), 
+                    trooper.state.missionAvailable && trooper.makeMissions(),
+                    trooper.state.raidAvailable && trooper.makeRaids()
                 ];
-
                 fightPromises = _.compact(fightPromises);
                 var fightPromise = q.all(fightPromises);
                 fightPromise.then(function(fightResponse){

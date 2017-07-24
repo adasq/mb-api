@@ -24,17 +24,6 @@ const queue = kue.createQueue({
 });
 // kue.app.listen(3000);
 
-play({ name: 'army343' }, (result) => {
-    console.log(result);
-})
-play({ name: 'army344' }, (result) => {
-    console.log(result);
-})
-
-play({ name: 'army331' }, (result) => {
-    console.log(result);
-})
-
 const STATE = {
     DEFAULT: 0,
     PLAYING: 1,
@@ -47,7 +36,9 @@ const STATE = {
 
 queue.process('play', function (job, done) {
     console.log('start playing', job.data);
+    console.time(job.id);
     play(job.data, (result) => {
+        console.timeEnd(job.id);
         let newResult = {};
 
         if (result.code) {

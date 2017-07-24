@@ -86,17 +86,33 @@ for(;i<itemsLength;++i){
 };
 
 
-this.getState = function(b) {
-	var $ = cheerio.load(b, {normalizeWhitespace: true});
-	const TIMER_REGEX = /mt.js.Timer.alloc/;
-	const x = {
-		battles: !!($('#bat_tip').html() || '').match(TIMER_REGEX),
-		mission: !!($('#miss_tip').html() || '').match(TIMER_REGEX),
-		raid: !!($('#raid_tip').html() || '').match(TIMER_REGEX)
+	this.getState = function (b) {
+		const bodyNotAvailable= b === '';
+		const TIMER_REGEX = /mt.js.Timer.alloc/;
+		var $ = cheerio.load(b, { normalizeWhitespace: true });
+
+		function isBotAllowedByTip(id) {
+			const tip = $(id).html();
+			if (tip === null) {
+				//Mission or Raids unavailable
+				return false;
+			} else {
+				//tip available
+				if (tip.match(TIMER_REGEX)) {
+					//timer available
+					return false;
+				} else {
+					//timer not available on tip
+					return true;
+				}
+			}
+		}
+		return {
+			battlesAvailable: bodyNotAvailable ? true : isBotAllowedByTip('#bat_tip'),
+			missionAvailable: bodyNotAvailable ? true : isBotAllowedByTip('#miss_tip'),
+			raidAvailable: bodyNotAvailable ? true : isBotAllowedByTip('#raid_tip')
+		};
 	};
-	
-	return x;
-};
 
 
 
