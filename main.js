@@ -17,12 +17,14 @@ admin.initializeApp({
 
 const queue = kue.createQueue({
     redis: {
-        port: 14880,
-        host: nconf.get('REDIS_HOST'),
-        auth: nconf.get('REDIS_PSWD')
+        port: 19407 || 14880,
+        host: 'redis-19407.c2.eu-west-1-3.ec2.cloud.redislabs.com' || nconf.get('REDIS_HOST'),
+        auth: 'admin' || nconf.get('REDIS_PSWD')
     }
 });
 // kue.app.listen(3000);
+
+addPlayJob({name: 'ziemniaki5'});
 
 const STATE = {
     DEFAULT: 0,
@@ -37,23 +39,29 @@ const STATE = {
 queue.process('play', function (job, done) {
     console.log('start playing', job.data);
     console.time(job.id);
-    play(job.data, (result) => {
+    play(job.data, (err, result) => {
         console.timeEnd(job.id);
-        let newResult = {};
-
-        if (result.code) {
-            newResult.state = STATE.ERROR;
-            newResult.error = result.message;
+        if (err) {
+            console.log('ERR', job.data.name, err);
+            admin.database().ref('results/' + job.data.name).set({
+                state: STATE.ERROR,
+                error: err
+            });
         } else {
-            newResult = result;
-            newResult.state = result.upgrade ? STATE.UPGRADE_AVAILABLE : STATE.UPGRADE_NOT_AVAILABLE;
+            console.log(result);
+            let newResult = {};
+            if (result.code) {
+                newResult.state = STATE.ERROR;
+                newResult.error = result.message;
+            } else {
+                newResult = result;
+                newResult.state = result.upgrade ? STATE.UPGRADE_AVAILABLE : STATE.UPGRADE_NOT_AVAILABLE;
+            }
+            newResult.lastUpdated = Date.now();
+            admin.database().ref('results/' + job.data.name).set(newResult);
         }
-
-        newResult.lastUpdated = Date.now();
-
-        admin.database().ref('results/' + job.data.name).set(newResult);
         done();
-    })
+    });
 });
 
 queue.process('selectSkill', function (job, done) {
