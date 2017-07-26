@@ -48,7 +48,6 @@ queue.process('play', function (job, done) {
                 error: err
             });
         } else {
-            console.log(result);
             let newResult = {};
             if (result.code) {
                 newResult.state = STATE.ERROR;
