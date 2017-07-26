@@ -17,9 +17,9 @@ admin.initializeApp({
 
 const queue = kue.createQueue({
     redis: {
-        port: 19407 || 14880,
-        host: 'redis-19407.c2.eu-west-1-3.ec2.cloud.redislabs.com' || nconf.get('REDIS_HOST'),
-        auth: 'admin' || nconf.get('REDIS_PSWD')
+        port: 14880,
+        host: nconf.get('REDIS_HOST'),
+        auth: nconf.get('REDIS_PSWD')
     }
 });
 // kue.app.listen(3000);
