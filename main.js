@@ -65,20 +65,23 @@ queue.process('selectSkill', function (job, done) {
     console.log('start skill selecting', job.data);
     selectSkill(job.data, (result) => {
         let newResult = {};
-        console.log(result);
-
         if (result.code && result.code === 201) {
             newResult = result;
             newResult.state = STATE.SKILL_SELECTED;
+            admin.database().ref('results/' + job.data.name + '/state').set(STATE.SKILL_SELECTED);
         } else {
+            admin.database().ref('results/' + job.data.name).update({
+                ['/state']: STATE.ERROR,
+                ['/error']: result.message,
+            });
             newResult.state = STATE.ERROR;
             newResult.error = result.message;
         }
         // newResult.lastUpdated = Date.now();
         console.log(newResult);
-        admin.database().ref('results/' + job.data.name).set(newResult);
+        // admin.database().ref('results/' + job.data.name + '/state').set(newResult);
         done();
-    })
+    });
 });
 
 function addPlayJob(data) {
