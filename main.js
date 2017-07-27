@@ -102,7 +102,7 @@ admin.database().ref('/queue').orderByChild('state').limitToLast(2).endAt().on('
     }, (err, committed) => {
         if (err) return console.log('err:', err);
         if (committed) {
-            addPlayJob({ name: snapshot.key });
+            addPlayJob({ name: snapshot.key, pass: snapshot.val().pass });
         } else {
             console.log('ignoring', snapshot.key);
         }
