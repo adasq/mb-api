@@ -38,7 +38,6 @@ Trooper.prototype.auth = function () {
 	let promise;
 	var that = this;
 
-
 	return new Promise((resolve, reject) => {
 		const { pass, name } = this.config;
 		if (pass) {
@@ -129,6 +128,8 @@ Trooper.prototype.getTrooperSkillList = function (trooperId) {
 	promise.then(function (body) {
 		var trooperInfo = parser.getTrooperInfo(body);
 		defer.resolve(trooperInfo);
+	}, (err) => {
+		defer.reject(err);
 	});
 	return defer.promise;
 };
@@ -142,8 +143,9 @@ Trooper.prototype.getTrooperUpgradeSkillList = function (trooperId) {
 	promise.then(function (body) {
 		var availableSkills = parser.getTrooperUpgradeInfo(body);
 		defer.resolve(availableSkills);
+	}, (err) => {
+		defer.reject(err);
 	});
-
 
 	return defer.promise;
 };

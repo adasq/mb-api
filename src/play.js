@@ -3,7 +3,7 @@ const q = require('q');
 const _ = require('underscore');
 
 module.exports = function (data, cb) {
-
+    
     var trooperConfig = {
         domain: "com",
         opponent: "nopls",
@@ -13,7 +13,7 @@ module.exports = function (data, cb) {
 
     const trooper = new Trooper(trooperConfig);
     trooper.auth().then(function (result) {
-        console.log(trooper.state);
+        console.log(data.name, result);
         if (result.code === 201) {
             var fightPromises = [
                 trooper.state.battlesAvailable && trooper.makeBattles(),
@@ -23,6 +23,7 @@ module.exports = function (data, cb) {
             fightPromises = _.compact(fightPromises);
             var fightPromise = q.all(fightPromises);
             fightPromise.then(function (fightResponse) {
+                console.log(data.name, fightResponse);
                 var promise = trooper.getTrooperSkillList(0);
                 promise.then(function (skillList) {
                     var promise = trooper.upgrade(0);
@@ -38,6 +39,8 @@ module.exports = function (data, cb) {
                                     skills: skillList,
                                     upgrade: upgradeSkillList
                                 });
+                            }, () => {
+                                connectionError(cb);
                             });
                         } else {
                             cb(null, {
@@ -47,6 +50,8 @@ module.exports = function (data, cb) {
                             });
                         }
                     });
+                }, () => {
+                    connectionError(cb)
                 });
             }, () => {
                 connectionError(cb)
