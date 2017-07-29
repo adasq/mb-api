@@ -1,110 +1,122 @@
 <style>
-  #byte_content {
-    margin: 5px 0;
-    max-height: 100px;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  #byte_range { margin-top: 5px; }
+    img,
+    .custom-file-upload {
+        margin: 0 auto;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+
+    .custom-file-upload {
+        width: 150px;
+        text-align: center;
+        border: 1px solid #ccc;
+        display: block;
+        padding: 6px 12px;
+        cursor: pointer;
+    }
 </style>
 
-<script src="/qrcode.min.js">
-  
-</script>
-<div id="qr"></div>
-<input type="file" id="files" name="file" /> Read bytes: 
-<span class="readBytesButtons">
-  <button>entire file</button>
-</span>
+<script src='/qrcode.min.js'></script>
+
+<label class='custom-file-upload'>
+    <input type='file' id='files' name='file' />
+    Import List
+</label>
+<div id='qr'></div>
 
 <script>
+    var qrCodeRef, myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
 
-var myHeaders = new Headers();
-myHeaders.append("Content-Type", "application/json");
-
-
-
-
-
-
-  function readBlob() {
-
-    var files = document.getElementById('files').files;
-    if (!files.length) {
-      alert('Please select a file!');
-      return;
-    }
-
-    var file = files[0];
-
-    var reader = new FileReader();
-
-    reader.onloadend = function(evt) {
-      if (evt.target.readyState == FileReader.DONE) {       
-        const troopers = getTrooeprsByFileContent(evt.target.result);
-        console.log(troopers);
-        uploadTroopers(troopers, (err, id) => {
-          if(err) return console.log(err);
-          showQr(id);
-        })
-      }
+    document.querySelector('#files').onchange = function () {
+        readBlob();
     };
 
-    var blob = file.slice(0, file.size);
-    reader.readAsBinaryString(blob);
-  }
-  
-  document.querySelector('.readBytesButtons').addEventListener('click', function(evt) {
-    if (evt.target.tagName.toLowerCase() == 'button') {
-      readBlob();
+    function readBlob() {
+
+        var files = document.getElementById('files').files;
+        if (!files.length) {
+            alert('Please select a file!');
+            return;
+        }
+
+        var file = files[0];
+
+        var reader = new FileReader();
+
+        reader.onloadend = function (evt) {
+            if (evt.target.readyState == FileReader.DONE) {
+                const troopers = getTrooeprsByFileContent(evt.target.result);
+                console.log(troopers);
+                uploadTroopers(troopers, (err, id) => {
+                    if (err) return console.log(err);
+                    showQr(id);
+                })
+            }
+        };
+
+        var blob = file.slice(0, file.size);
+        reader.readAsBinaryString(blob);
     }
-  }, false);
 
-function showQr(text) {
-  var qrcode = new QRCode("qr", {
-      text: text,
-      width: 256,
-      height: 256,
-      colorDark : "#000000",
-      colorLight : "#ffffff",
-      correctLevel : QRCode.CorrectLevel.H
-  });
-}
+    document.querySelector('.readBytesButtons').addEventListener('click', function (evt) {
+        if (evt.target.tagName.toLowerCase() == 'button') {
+            readBlob();
+        }
+    }, false);
 
-function uploadTroopers(troopers, cb) {
-  fetch('/api/upload', {
-    method: 'POST',
-    headers: myHeaders,
-    body: JSON.stringify(troopers)
-  }).then((response) => {
-    response.json().then((result) => {
-      cb(result.err, result.id);
-    })
-  }, err => {
-    cb(err);
-  });
-}
+    function showQr(text) {
+        if (qrCodeRef) {
+            qrCodeRef.clear();
+            qrCodeRef.makeCode(text);
+        } else {
+            qrcode = new QRCode('qr', {
+                text: text,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+    }
 
-  function getTrooeprsByFileContent(data) {
-    const lines = data.split('\n');
+    function uploadTroopers(troopers, cb) {
+        fetch('/api/upload', {
+            method: 'POST',
+            headers: myHeaders,
+            body: JSON.stringify(troopers)
+        }).then((response) => {
+            response.json().then((result) => {
+                cb(result.err, result.id);
+            })
+        }, err => {
+            cb(err);
+        });
+    }
+
+    function getTrooeprsByFileContent(data) {
+        const lines = data.split('\n');
         const troopers = [];
         lines.forEach(line => {
-          if(line){
-            line = line.trim();
-            const REGEX = /\(.+\)$/;
-            const pswd = line.match(REGEX);
-            const trooper = {};
-            if (pswd) {
-              trooper.name = line.split(REGEX)[0];
-              trooper.pswd = pswd[0].substr(1, pswd[0].length - 2);
-            } else {
-              trooper.name = line;
+            if (line) {
+                line = line.trim();
+                const REGEX = /\(.+\)$/;
+                const pswd = line.match(REGEX);
+                const trooper = {};
+                if (pswd) {
+                    trooper.name = line.split(REGEX)[0];
+                    trooper.pswd = pswd[0].substr(1, pswd[0].length - 2);
+                } else {
+                    trooper.name = line;
+                }
+                console.log(trooper.name);
+                troopers.push(trooper);
             }
-            console.log(trooper.name);
-            troopers.push(trooper);
-          }
         });
         return troopers;
-  }
+    }
 
 </script>
