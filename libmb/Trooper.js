@@ -126,7 +126,16 @@ Trooper.prototype.getTrooperSkillList = function (trooperId) {
 	var parser = new PageParser(), trooper = (trooperId || 0), that = this, defer = q.defer();
 	var promise = this.req.get(this.urlManager.getTrooperUrl(trooper));
 	promise.then(function (body) {
-		var trooperInfo = parser.getTrooperInfo(body);
+		console.log('body');
+		var trooperInfo;
+		try {
+			trooperInfo = parser.getTrooperInfo(body);
+		} catch(e) {
+			console.log(e);
+			console.log(body);
+			return defer.reject(e);
+		}
+		console.log('body2');
 		defer.resolve(trooperInfo);
 	}, (err) => {
 		defer.reject(err);

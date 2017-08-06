@@ -10,7 +10,7 @@ module.exports = function(){
 	//console.log(this.jar.setCookieSync)
 	this.send = function(url){
 			var defer= q.defer(); 			
-			request({uri: url, jar: j, followRedirect: false}, function(e,r,b){
+			request({uri: url, jar: j, timeout: 5000, followRedirect: false}, function(e,r,b){
 				if(e){										
 					defer.reject(-111);
 				}else{
@@ -23,14 +23,17 @@ module.exports = function(){
 	};
 	this.get = function(url){
 			var defer= q.defer(); 	
-			request({uri: url, jar: j, followRedirect: true}, function(e,r,b){			
+			request({uri: url, jar: j, timeout: 5000, followRedirect: true}, function(e,r,b){			
+				if(e) {
+					defer.reject(e);
+				}
 				defer.resolve(b);
 			});
 			return defer.promise;
 	};
 	this.post = function(url, data){
 			var defer= q.defer();
-			request.post({form: data, uri: url, jar: j, followRedirect: false}, function(e,r,b){
+			request.post({form: data, uri: url, jar: j, timeout: 5000, followRedirect: false}, function(e,r,b){
 				if(e){
 					defer.reject(-111);
 				}else{

@@ -3,7 +3,7 @@ const q = require('q');
 const _ = require('underscore');
 
 module.exports = function (data, cb) {
-    
+
     var trooperConfig = {
         domain: "com",
         opponent: "nopls",
@@ -23,11 +23,13 @@ module.exports = function (data, cb) {
             fightPromises = _.compact(fightPromises);
             var fightPromise = q.all(fightPromises);
             fightPromise.then(function (fightResponse) {
-                console.log(data.name, fightResponse);
+                console.log(data.name, 'fightResponse');
                 var promise = trooper.getTrooperSkillList(0);
                 promise.then(function (skillList) {
+                    console.log(data.name, 'skillList');
                     var promise = trooper.upgrade(0);
                     promise.then(result => {
+                        console.log(data.name, 'upgrade');
                         _.each(skillList.skills, (skill) => {
                             skill.style = skill.style.replace("url('/img/", "url('/assets/");
                         });
@@ -49,6 +51,8 @@ module.exports = function (data, cb) {
                                 upgrade: null
                             });
                         }
+                    }, () => {
+                        connectionError(cb);
                     });
                 }, () => {
                     connectionError(cb)
@@ -65,5 +69,6 @@ module.exports = function (data, cb) {
 };
 
 function connectionError(cb) {
+    console.log(':X');
     cb('connection error');
 }

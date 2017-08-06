@@ -22,7 +22,7 @@ const queue = kue.createQueue({
         auth: nconf.get('REDIS_PSWD')
     }
 });
-// kue.app.listen(3000);
+ kue.app.listen(3000);
 
 const STATE = {
     DEFAULT: 0,
@@ -57,7 +57,7 @@ queue.process('play', function (job, done) {
             newResult.lastUpdated = Date.now();
             admin.database().ref('results/' + job.data.name).set(newResult);
         }
-        done();
+        done(new Error(err));
     });
 });
 
@@ -87,12 +87,12 @@ queue.process('selectSkill', function (job, done) {
 function addPlayJob(data) {
     var job = queue.create('play', data).removeOnComplete( true ).save(function (err) {
         // if( !err ) console.log( job.id );
-    });
+    }).attempts(3).backoff( true )
 }
 function addSelectSkillJob(data) {
     var job = queue.create('selectSkill', data).removeOnComplete( true ).save(function (err) {
         // if( !err ) console.log( job.id );
-    });
+    })
 }
 
 admin.database().ref('/queue').orderByChild('state').limitToLast(2).endAt().on('child_added', (snapshot) => {
